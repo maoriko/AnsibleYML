@@ -1,0 +1,47 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Install packages.
+     yum:
+       name: ['epel-release','ntfs-3g']
+   - name: Creates directory
+     file:
+      path: /mnt/smb/
+      state: directory
+   - name: Mount up device by label
+     mount:
+      path: /mnt/smb/
+      src: //10.100.102.13/share
+      state: mounted
+      fstype: cifs
+      opts: username=guest,password=,file_mode=0777,dir_mode=0777 
+   - name: Creates directory for Orientdb
+     file:
+      path: /opt/orientdb
+      state: directory
+   - name: Copy DataBase
+     shell: | 
+      cp -r /mnt/smb/Artifactory/Deployment/DBs/orientdb-community-2.2.30/databases /opt/orientdb/
+      cp -r /mnt/smb/Artifactory/Deployment/DBs/orientdb-community-2.2.30/config /opt/orientdb
+   - name: data container
+     docker_container:
+      name: orientdb
+      image: orientdb:2.2.30
+      env:
+       ORIENTDB_ROOT_PASSWORD='orient!@#$'
+      volumes:
+       - /opt/orientdb/databases:/orientdb/databases
+       - /opt/orientdb/config:/orientdb/config
+       - /opt/orientdb/log:/orientdb/log
+      state: started
+      ports:
+       - "2424:2424"
+       - "2480:2480"
+   - name: Copy Orient plugin
+     shell:
+       docker cp /mnt/smb/Artifactory/Deployment/DBs/orientdb-community-2.2.30/lib/OrientShortestPathPlugin.jar orientdb:/orientdb/lib
+   - name: Restart Orientdb service
+     docker_container: 
+      name: orientdb
+      restart: yes

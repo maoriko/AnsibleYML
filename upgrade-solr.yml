@@ -1,0 +1,47 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Pull and run SolR container.
+     docker_container:
+      name: solr
+      image: solr:7.7.1
+      restart_policy: always
+      entrypoint: /opt/solr/bin/solr -f -p 9500 -m 3g
+      state: present
+      ports:
+       - "9500:9500"
+   - name: Copy Solr Config 
+     copy:
+      src: /mnt/smb/Artifactory/Deployment/DBs/solr-6.1.0/bin/solr.in.sh
+      dest: /opt/solr/configuration/
+      owner: ta9
+   - name: Creates directory
+     file:
+      path: /opt/solr/server/
+      owner: ta9
+      mode: o=rw
+      state: directory
+   - name: Copy Solr Data 
+     unarchive:
+      src: /mnt/smb/Artifactory/Ansible/DevMachine/DBs/solr.zip
+      dest: /opt/solr/server/
+   - name: Copy Solr Plugin 
+     copy:
+      src: /mnt/smb/Artifactory/Deployment/DBs/solr-7.7.1/server/solr-webapp/webapp/WEB-INF/lib/jts-core-1.16.1.jar
+      dest: /opt/solr/plugin/
+   - name: Change permissions  
+     file:
+      path: /opt/solr/
+      owner: ta9
+      mode: o=rwx
+      recurse: yes
+   - name: Copy SolR files into container.
+     shell: |
+      #docker cp /opt/solr/configuration/solr.in.sh solr:/opt/solr/bin/solr.in.sh
+      docker cp /opt/solr/server/solr solr:/opt/solr/server
+      docker cp /opt/solr/plugin/jts-core-1.16.1.jar solr:/opt/solr/server/solr-webapp/webapp/WEB-INF/lib/
+   - name: Start SolR service
+     docker_container:
+      name: solr
+      state: started

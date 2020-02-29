@@ -1,0 +1,42 @@
+---
+- hosts: "all"
+  remote_user: root
+  tasks:
+   - name: Creates directory for Orientdb
+     file:
+      path: /opt/orientdb
+      state: directory
+   - name: Copy orient Plugin
+     copy:
+      src: /mnt/smb/Artifactory/Deployment/DBs/orientdb-community-2.2.30/lib/OrientShortestPathPlugin.jar
+      dest: /opt/orientdb/plugin/
+      owner: ta9
+      mode: o=rwx
+   - name: Copy orient Config
+     copy:
+      src: /mnt/smb/Artifactory/Deployment/DBs/orientdb-community-2.2.30/config/
+      dest: /opt/orientdb/config/
+      mode: o=rw
+      force: no
+   - name: Pull and run Orientdb container.
+     docker_container:
+      name: orientdb
+      image: orientdb:2.2.30
+      restart_policy: always
+      env:
+       ORIENTDB_ROOT_PASSWORD="orient!@#$"
+      volumes:
+       - /opt/orientdb/databases:/orientdb/databases
+       - /opt/orientdb/config:/orientdb/config
+       - /opt/orientdb/log:/orientdb/log
+      state: present
+      ports:
+       - "2424:2424"
+       - "2480:2480"
+   - name: Copy Orient plugin
+     shell:
+       docker cp /opt/orientdb/plugin/OrientShortestPathPlugin.jar orientdb:/orientdb/lib
+   - name: Start orient service
+     docker_container:
+      name: orientdb
+      state: started

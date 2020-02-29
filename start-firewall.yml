@@ -1,0 +1,7 @@
+--- 
+- hosts: webservers
+  remote_user: root
+  become: yes
+  tasks:     
+    - name: Start service firewalld, if not started
+      systemd: state=started name=firewalld

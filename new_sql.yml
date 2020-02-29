@@ -1,0 +1,23 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Creates directory for MySQL
+     file:
+      path: /opt/mysql
+      state: directory
+,
+   - name: Pull and run MySql container.
+     docker_container:
+      name: mysql
+      image: mysql:8.0.16
+      restart_policy: always
+      command: --lower_case_table_names=1
+#      volumes:
+#       - /opt/mysql:/etc/mysql
+      state: started
+      env:
+       MYSQL_ROOT_PASSWORD=mysql1234
+      ports:
+       - "3306:3306"
+

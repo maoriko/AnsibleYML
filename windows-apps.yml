@@ -1,0 +1,18 @@
+---
+- hosts: all
+  remote_user: administrator
+  tasks:
+   - name: install Chocolatey
+     win_chocolatey:
+      name: chocolatey
+      state: present
+   - name: disable enhanced exit codes
+     win_chocolatey_feature:
+      name: useEnhancedExitCodes
+      state: disabled
+   - name: Install windows apps
+     win_chocolatey:
+      name: 
+      - 7zip.install
+      - googlechrome
+      - notepadplusplus

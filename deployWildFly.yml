@@ -1,0 +1,14 @@
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Deploy Bineries to Wildfly
+     copy:
+      src: /mnt/smb
+      dest: /opt/wildfly/
+      owner: root
+      mode: o=rwx
+      recurse: yes
+     register: result
+     until: result | success
+     retries: 3
+     delay: 5

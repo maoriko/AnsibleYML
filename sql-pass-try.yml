@@ -1,0 +1,20 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Pull and run MySql container.
+     docker_container:
+      name: mysql
+      image: mysql:5.6.20
+      state: started
+      env:
+       MYSQL_ROOT_PASSWORD="{{ SQL_Pass }}"
+      ports:
+       - "3306:3306"
+   - name: Wait for MySQL to start
+     wait_for:
+      port: 3306
+      delay: 5
+   - name: Run BaseScript
+     shell:
+      docker exec -i mysql mysql -uroot -p{{ SQL_Pass }} mysql < /mnt/smb/Artifactory/Deployment/DBs/MySql/BaseScript_2_3.sql

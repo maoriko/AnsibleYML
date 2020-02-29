@@ -1,0 +1,9 @@
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Deploy Bineries to Wildfly
+     copy:
+      src: ""
+      dest: /opt/wildfly/
+      owner: ta9
+      mode: o=rwx

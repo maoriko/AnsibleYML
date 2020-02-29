@@ -1,0 +1,27 @@
+---
+- hosts: "all"
+  remote_user: root
+  tasks:
+   - name: Pull and run SeaWeed master container.
+     docker_container:
+      name: seaweed_master
+      image: chrislusf/seaweedfs
+      restart_policy: always
+      entrypoint: /entrypoint.sh server -dir="/data" -ip={{ ansible_host }} -master.port=9334 -volume.port=8800 -volume.port.public=8800 -volume.publicUrl={{ ansible_host }}:8800  
+      state: started
+      ports:
+       - "9334:9334"
+       - "19334:19334"
+       - "8800:8800"
+       - "18800:18800"
+      volumes:
+       - /opt/weedfs/data:/data
+   - name: Wait for SeaWeed_Master to start
+     wait_for:
+      port: 9334
+      delay: 5
+   - name: Creates an entry to reboot seaweed volume on restart
+     cron:
+      name: "a job for reboot seaweed master"
+      special_time: reboot
+      job: "docker restart seaweed_master"

@@ -1,0 +1,40 @@
+  ---
+- hosts: "all"
+  remote_user: administrator
+  tasks:
+    - name: Install IIS Web-Server with sub features and management tools
+      win_feature:
+        name: Web-Server
+        state: present
+        include_sub_features: yes
+        include_management_tools: yes
+      register: win_feature
+    - name: Copy Web Client Mold
+      win_copy:
+        src: \\Share\Artifactory\Ansible\Molds\
+        dest: C:\Program Files
+        remote_src: yes
+    - name: Remove Default Web Site
+      win_iis_website:
+        name: "Default Web Site"
+        state: absent
+    - name:  IIS site
+      win_iis_website:
+        name: 
+        state: started
+        port: 80
+        physical_path: C:\Program Files\\Web\Web Client\app
+      register: website
+    - name: Add Login webapplication on IIS.
+      win_iis_webapplication:
+        name: login
+        site: 
+        state: present
+        physical_path: C:\Program Files\\\Web\Web Client\login
+    - name: Add DocViewer webapplication on IIS.
+      win_iis_webapplication:
+        name: DocumentViewer
+        site: 
+        state: present
+        physical_path: C:\Program Files\\Web\DocumentViewer
+

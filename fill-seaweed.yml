@@ -1,0 +1,16 @@
+---
+- hosts: "all"
+  remote_user: root
+  tasks:
+   - name: Creates directory
+     file:
+      path: /opt/weedfs/data
+      owner: ta9
+      mode: o=rw
+      state: directory
+   - name: Copy ImageStore 
+     copy:
+      src: /mnt/smb/Artifactory/Ansible/DevMachine/DBs/ImageStore/
+      dest: /opt/weedfs/data/
+      mode: o=rw
+      owner: ta9

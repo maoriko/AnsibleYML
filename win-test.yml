@@ -1,0 +1,23 @@
+- hosts: "all"
+  remote_user: administrator
+  tasks:
+    - name: Copy argus service host mold bineries
+      win_copy:
+        src: /mnt/smb/Artifactory/Ansible/Molds/TA9/C#/
+        dest: C:\Program Files\TA9\C#
+        force: no
+    - name: Install .net 4.6.1 and my sql connector
+      win_chocolatey:
+        name:
+          - dotnet4.6.1
+          - mysql-connector
+    - name: Create a new service for TA9 argus service host.
+      win_service:
+        name: TA9 Service Host
+        path: C:\Program Files\TA9\C#\TA9 Core Services\Argus.Host.WindowsService.exe
+        display_name: TA9 Service Host
+        description: A windows service which hosting all of the configured TA9 services
+        username: LocalSystem
+        password: ""
+        state: stopped
+        start_mode: auto

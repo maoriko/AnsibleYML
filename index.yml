@@ -1,0 +1,21 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Creates Java directory
+     file:
+      path: /opt/indexer
+      state: directory
+   - name: Copy indexing jar
+     copy:
+      src: "{{ jar_path }}"
+      dest: /opt/indexer
+   - name: Copy service file
+     copy:
+      src: /mnt/smb/Artifactory/systemctl-service-file/indexing.service
+      dest: /etc/systemd/system
+   - name: Start Service
+     systemd:
+      name: indexing
+      state: started
+

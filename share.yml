@@ -1,0 +1,20 @@
+- hosts: "{{ host_list }}"
+  remote_user: root
+  tasks:
+   - name: Install Samaba.
+     yum:
+       name: ['samba' ,'samba-client', 'samba-common']
+   - name: Copy smb config 
+     copy:
+      src: /mnt/smb/Artifactory/SystemConfigs/smb.conf
+      dest: /etc/samba/
+   - name: Enable SMB script.
+     shell: |
+      mkdir -p {{ sharePath }}
+      systemctl enable smb.service
+      systemctl enable nmb.service
+      systemctl restart smb.service
+      systemctl restart nmb.service
+      chmod -R 0755 {{ sharePath }}
+      chown -R nobody:nobody {{ sharePath }}
+      chcon -t samba_share_t {{ sharePath }}

@@ -1,0 +1,16 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Pull and run SeaWeed master container.
+     docker_container:
+      name: seaweed_master
+      image: chrislusf/seaweedfs
+      restart_policy: always
+      entrypoint: /entrypoint.sh master -ip={{ SeaWeedIP }} -port=9334
+      state: started
+      ports:
+       - "9334:9334"
+       - "19334:19334"
+      volumes:
+       - /opt/weedfs/data:/data

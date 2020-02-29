@@ -1,0 +1,43 @@
+---
+- hosts: all
+  remote_user: administrator
+  tasks:
+    - name: Copy argus service host mold bineries
+      win_copy:
+        src: /mnt/smb/Artifactory/Ansible/Molds/TA9/C#/
+        dest: C:\Program Files\TA9\C#
+        force: no
+    - name: Install .net 4.6.1 and my sql connector
+      win_chocolatey:
+        name:
+          - dotnet4.6.1
+          - mysql-connector
+      register: result
+      until: result.rc == 0
+      retries: 3
+    - name: Create pass with random 16 character password. If password exists just give the password
+      set_fact:
+       password: "{{ lookup('password', '/tmp/passwordfile chars=ascii_letters,digits,hexdigits,punctuation') }}"
+    - name: Ensure user ServiceRunner is present
+      win_user:
+        name: ServiceRunner
+        password: "{{ password }}"
+        state: present
+        groups:
+         - Administrators
+    - name: Add account to Log on as a service
+      win_user_right:
+        name: SeServiceLogonRight
+        users:
+        - .\ServiceRunner
+        action: add
+    - name: Create a new service for TA9 argus service host.
+      win_service:
+        name: TA9 Service Host
+        path: C:\Program Files\TA9\C#\TA9 Core Services\Argus.Host.WindowsService.exe
+        display_name: TA9 Service Host
+        description: A windows service which hosting all of the configured TA9 services
+        username: .\ServiceRunner
+        password: "{{ password }}"
+        state: stopped
+        start_mode: auto

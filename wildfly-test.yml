@@ -1,0 +1,59 @@
+---
+- hosts: all
+  remote_user: root
+  tasks:
+   - name: Pull and run Wildfly container.
+     docker_container:
+      name: wildfly
+      image: jboss/wildfly:10.0.0.Final
+      restart_policy: always
+      state: present
+      ports:
+       - "9900:9900"
+       - "8787:8787"
+      volumes:
+       - /opt/wildfly/upload:/opt/upload:rw
+       - /opt/wildfly/TextAnaltycsProviderFiles:/opt/TextAnaltycsProviderFiles
+       - /opt/wildfly/deployments:/opt/jboss/wildfly/standalone/deployments:rw
+       - /opt/wildfly/log:/opt/jboss/wildfly/standalone/log:rw
+  #  - name: Copy Text Analtycs Provider Files 
+  #    copy:
+  #     src: /mnt/smb/Artifactory/BuildFiles/TextAnaltycsProviderFiles/
+  #     dest: /opt/wildfly/TextAnaltycsProviderFiles/
+  #     owner: ta9
+   - name: Creates directory
+     file:
+      path: /opt/wildfly/
+      owner: ta9
+      mode: o=rw
+      state: directory
+   - name:  Copy Text Analtycs Provider Files
+     unarchive:
+      src: /mnt/smb/Artifactory/BuildFiles/TextAnaltycsProviderFiles.zip
+      dest: /opt/wildfly/
+   - name: Copy config Files 
+     copy:
+      src: /mnt/smb/Artifactory/Deployment/Servers/wildfly-10.0.0.Final/standalone/configuration/standalone.xml
+      dest: /opt/wildfly/configuration/
+      owner: ta9
+      mode: o=rwx
+   - name: Copy config Files 
+     copy:
+      src: /mnt/smb/Artifactory/Deployment/Servers/wildfly-10.0.0.Final/bin/standalone.conf
+      dest: /opt/wildfly/configuration/
+      owner: ta9
+      mode: o=rwx
+   - name: Copy Wildfly files into container
+     shell: |
+      docker cp /opt/wildfly/configuration/standalone.xml wildfly:/opt/jboss/wildfly/standalone/configuration
+      docker cp /opt/wildfly/configuration/standalone.conf wildfly:/opt/jboss/wildfly/bin
+   - name: Change permissions  
+     file:
+      path: /opt/wildfly/
+      owner: ta9
+      mode: o=rw
+      recurse: yes
+   - name: Start Wildfly service
+     docker_container:
+      name: wildfly
+      state: started

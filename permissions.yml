@@ -1,0 +1,43 @@
+- hosts: "all"
+  remote_user: root
+  tasks:
+   - name: Change permissions wildfly
+     file:
+      path: /opt/wildfly/log
+      mode: o=rwx
+      recurse: yes
+   - name: Change permissions wildfly
+     file:
+      path: /opt/wildfly/configuration
+      mode: o=rwx
+      recurse: yes
+   - name: Change permissions wildfly
+     file:
+      path: /opt/wildfly/deployments
+      mode: o=rwx
+      recurse: yes
+   - name: Change permissions wildfly
+     file:
+      path: /opt/wildfly
+      mode: o=rwx
+      recurse: no
+   - name: Change permissions orientdb
+     file:
+      path: /opt/orientdb
+      mode: o=rwx
+      recurse: yes
+   - name: Change permissions weedfs
+     file:
+      path: /opt/weedfs
+      mode: o=rwx
+      recurse: yes
+   - name: Change permissions indexer
+     file:
+      path: /opt/indexer
+      mode: o=rwx
+      recurse: yes
+   - name: Change permissions loader
+     file:
+      path: /opt/loader
+      mode: o=rwx
+      recurse: yes
